@@ -1,8 +1,13 @@
 import random
-from django.shortcuts import render
+from django.conf import settings
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, JsonResponse
-from .models import Tweet
+from django.utils.http import url_has_allowed_host_and_scheme
 
+from .models import Tweet
+from .forms import TweetForm
+
+ALLOWED_HOSTS = settings.ALLOWED_HOSTS
 
 # Create your views here.
 
@@ -33,3 +38,14 @@ def tweet_detail_view(request, tweet_id, *args, **kwargs):
         status = 404
     
     return JsonResponse(data, status=status)
+
+def tweet_create_view(request, *args, **kwargs):
+    form = TweetForm(request.POST or None)
+    next_url = request.POST.get('next') or None
+    if form.is_valid():
+        obj = form.save(commit=False)
+        obj.save()
+        if next_url and url_has_allowed_host_and_scheme(next_url, ALLOWED_HOSTS):
+            return redirect(next_url)
+        form = TweetForm()
+    return render(request, 'components/form.html', context={"form": form})
