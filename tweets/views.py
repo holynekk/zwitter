@@ -6,6 +6,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import Tweet
 from .forms import TweetForm
+from .utils import is_ajax
 
 ALLOWED_HOSTS = settings.ALLOWED_HOSTS
 
@@ -16,7 +17,7 @@ def home_view(request, *args, **kwargs):
 
 def tweet_list_view(request, *args, **kwargs):
     query_set = Tweet.objects.all()
-    tweet_list = [{'id': x.id, "content": x.content, "likes": random.randint(0, 512)} for x in query_set]
+    tweet_list = [x.serialize() for x in query_set]
     data = {
         'is_user': False,
         'response': tweet_list,
@@ -45,10 +46,12 @@ def tweet_create_view(request, *args, **kwargs):
     if form.is_valid():
         obj = form.save(commit=False)
         obj.save()
-        if request.is_ajax():
-            return JsonResponse({}, status=201)
-
+        if is_ajax(request):
+            return JsonResponse(obj.serialize(), status=201)
         if next_url and url_has_allowed_host_and_scheme(next_url, ALLOWED_HOSTS):
             return redirect(next_url)
         form = TweetForm()
+    if form.errors:
+        if is_ajax(request):
+            return JsonResponse(form.errors, status=400)
     return render(request, 'components/form.html', context={"form": form})
