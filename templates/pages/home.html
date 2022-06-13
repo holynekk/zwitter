@@ -42,6 +42,11 @@
                     const ogHtml = zweetContainer.innerHTML
                     zweetContainer.innerHTML = newZweetElement + ogHtml
                     myForm.reset()
+                } else if (xhr.status === 400) {
+                    const errorJson = xhr.reponse
+                    console.log(errorJson)
+                } else if (xhr.status === 500) {
+                    alert("There is a server error!")
                 }
             }
             xhr.send(myFormData)
