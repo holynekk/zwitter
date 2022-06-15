@@ -127,6 +127,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL="login"
 
 MAX_ZWEET_LENGTH = 240
+TWEET_ACTION_OPTIONS = ['like', 'unlike', 'retweet']
 
 DEFAULT_RENDERER_CLASSES = [
     'rest_framework.renderers.JSONRenderer',
