@@ -34,6 +34,19 @@ def tweet_detail_view(request, tweet_id, *args, **kwargs):
     serializer = TweetSerializer(obj)
     return Response(serializer.data, status=200)
 
+@api_view(['DELETE', 'POST'])
+@permission_classes([IsAuthenticated])
+def tweet_delete_view(request, tweet_id, *args, **kwargs):
+    query_set = Tweet.objects.filter(id=tweet_id)
+    if not query_set.exists():
+        return Response({}, status=404)
+    query_set = query_set.filter(user=request.user)
+    if not query_set.exist():
+        return Response({"message": "You can not delete this Zweet!"}, status=401)
+    obj = query_set.first()
+    obj.delete()
+    return Response({"message": "Your zweet has been deleted!"}, status=200)
+
 @api_view(['POST'])
 # @authentication_classes([SessionAuthentication])
 @permission_classes([IsAuthenticated])
