@@ -4,7 +4,8 @@ from .models import Tweet
 
 MAX_ZWEET_LENGTH = settings.MAX_ZWEET_LENGTH
 TWEET_ACTION_OPTIONS = settings.TWEET_ACTION_OPTIONS
-class TweetSerializer(serializers.ModelSerializer):
+
+class TweetCreateSerializer(serializers.ModelSerializer):
     likes = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Tweet
@@ -18,9 +19,21 @@ class TweetSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("The tweet is too long")
         return value
 
+class TweetSerializer(serializers.ModelSerializer):
+    likes = serializers.SerializerMethodField(read_only=True)
+    parent = TweetCreateSerializer(read_only=True)
+
+    class Meta:
+        model = Tweet
+        fields = ['id', 'content', 'likes', 'is_retweet', 'parent']
+    
+    def get_likes(self, obj):
+        return obj.likes.count()
+
 class TweetActionSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     action = serializers.CharField()
+    content = serializers.CharField(allow_blank=True, required=False)
 
     def validate__action(self, value):
         value = value.lower().strip()
