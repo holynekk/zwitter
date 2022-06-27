@@ -1,4 +1,3 @@
-import random
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, JsonResponse
@@ -41,7 +40,7 @@ def tweet_delete_view(request, tweet_id, *args, **kwargs):
     if not query_set.exists():
         return Response({}, status=404)
     query_set = query_set.filter(user=request.user)
-    if not query_set.exist():
+    if not query_set.exists():
         return Response({"message": "You can not delete this Zweet!"}, status=401)
     obj = query_set.first()
     obj.delete()
@@ -66,10 +65,12 @@ def tweet_action_view(request, *args, **kwargs):
             return Response(serializer.data, status=200)
         elif action == 'unlike':
             obj.likes.remove(request.user)
+            serializer = TweetSerializer(obj)
+            return Response(serializer.data, status=200)
         elif action == 'retweet':
             new_zweet = Tweet.objects.create(user=request.user, parent=obj, content=content)
             serializer = TweetSerializer(new_zweet)
-            return Response(serializer.data, status=200)
+            return Response(serializer.data, status=201)
     return Response({}, status=200)
 
 @api_view(['POST'])
